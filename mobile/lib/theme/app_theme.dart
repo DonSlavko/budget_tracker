@@ -2,56 +2,190 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF2196F3);
-  static const Color accentColor = Color(0xFF03A9F4);
-  static const Color backgroundColor = Color(0xFFF5F5F5);
-  static const Color cardColor = Colors.white;
-  static const Color textColor = Color(0xFF333333);
-  static const Color secondaryTextColor = Color(0xFF666666);
-  static const Color incomeColor = Color(0xFF4CAF50);
-  static const Color expenseColor = Color(0xFFF44336);
+  // Primary Colors
+  static const Color primaryColor = Color(0xFF2196F3);  // Blue
+  static const Color primaryLightColor = Color(0xFFE3F2FD);  // Light Blue
+  static const Color primaryDarkColor = Color(0xFF1976D2);
 
-  static ThemeData lightTheme = ThemeData(
-    primaryColor: primaryColor,
+  // Secondary Colors
+  static const Color secondaryColor = Color(0xFF0F172A);  // Slate Dark
+  static const Color secondaryLightColor = Color(0xFF334155);
+  static const Color secondaryDarkColor = Color(0xFF0F172A);
+
+  // Background Colors
+  static const Color backgroundColor = Color(0xFFF8FAFC);
+  static const Color surfaceColor = Colors.white;
+  static const Color inputFillColor = Color(0xFFF1F5F9);  // Light Gray for inputs
+  static const Color cardColor = Colors.white;
+
+  // Text Colors
+  static const Color primaryTextColor = Color(0xFF1E293B);
+  static const Color secondaryTextColor = Color(0xFF64748B);
+  static const Color accentTextColor = Color(0xFF2196F3);
+
+  // Status Colors
+  static const Color successColor = Color(0xFF22C55E);
+  static const Color errorColor = Color(0xFFEF4444);
+  static const Color warningColor = Color(0xFFF59E0B);
+  static const Color infoColor = Color(0xFF3B82F6);
+
+  // Border Colors
+  static const Color borderColor = Color(0xFFE2E8F0);
+  static const Color dividerColor = Color(0xFFE2E8F0);
+
+  // Custom Text Styles with Google Fonts
+  static TextStyle get headingStyle => GoogleFonts.inter(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: primaryTextColor,
+    height: 1.2,
+  );
+
+  static TextStyle get subheadingStyle => GoogleFonts.inter(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: primaryTextColor,
+    height: 1.3,
+  );
+
+  static TextStyle get bodyStyle => GoogleFonts.inter(
+    fontSize: 16,
+    color: primaryTextColor,
+    height: 1.5,
+  );
+
+  static TextStyle get captionStyle => GoogleFonts.inter(
+    fontSize: 14,
+    color: secondaryTextColor,
+    height: 1.4,
+  );
+
+  // Custom Component Themes
+  static final ThemeData theme = ThemeData(
+    useMaterial3: true,
     colorScheme: ColorScheme.light(
       primary: primaryColor,
-      secondary: accentColor,
+      secondary: secondaryColor,
+      surface: surfaceColor,
       background: backgroundColor,
+      error: errorColor,
     ),
+    textTheme: GoogleFonts.interTextTheme(),
     scaffoldBackgroundColor: backgroundColor,
-    cardTheme: const CardTheme(
-      color: cardColor,
-      elevation: 2,
-      margin: EdgeInsets.all(8),
-    ),
-    textTheme: TextTheme(
-      headlineLarge: GoogleFonts.poppins(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: textColor,
-      ),
-      headlineMedium: GoogleFonts.poppins(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: textColor,
-      ),
-      bodyLarge: GoogleFonts.poppins(
-        fontSize: 16,
-        color: textColor,
-      ),
-      bodyMedium: GoogleFonts.poppins(
-        fontSize: 14,
-        color: secondaryTextColor,
-      ),
-    ),
     appBarTheme: AppBarTheme(
-      backgroundColor: primaryColor,
+      backgroundColor: surfaceColor,
       elevation: 0,
-      titleTextStyle: GoogleFonts.poppins(
+      centerTitle: true,
+      iconTheme: const IconThemeData(color: primaryTextColor),
+      titleTextStyle: GoogleFonts.inter(
+        color: primaryTextColor,
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: Colors.white,
       ),
+    ),
+    cardTheme: CardTheme(
+      color: cardColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: inputFillColor,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      labelStyle: GoogleFonts.inter(color: secondaryTextColor),
+      hintStyle: GoogleFonts.inter(color: secondaryTextColor),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        backgroundColor: primaryLightColor,
+        foregroundColor: primaryColor,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            if (states.contains(MaterialState.selected)) {
+              return Colors.white;
+            }
+            return Colors.transparent;
+          },
+        ),
+        foregroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            if (states.contains(MaterialState.selected)) {
+              return Colors.black87;
+            }
+            return Colors.black54;
+          },
+        ),
+        side: MaterialStateProperty.all(BorderSide.none),
+        padding: MaterialStateProperty.all(
+          const EdgeInsets.symmetric(vertical: 14),
+        ),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        minimumSize: MaterialStateProperty.all(
+          const Size(0, 48),
+        ),
+        shape: MaterialStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: primaryColor,
+      foregroundColor: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: surfaceColor,
+      selectedItemColor: primaryColor,
+      unselectedItemColor: secondaryTextColor,
+      type: BottomNavigationBarType.fixed,
+      elevation: 0,
+      selectedLabelStyle: GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+      unselectedLabelStyle: GoogleFonts.inter(
+        fontSize: 12,
+      ),
+    ),
+    dividerTheme: const DividerThemeData(
+      color: dividerColor,
+      thickness: 1,
+      space: 24,
     ),
   );
 } 

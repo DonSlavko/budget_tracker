@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Budget Tracker',
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.theme,
         home: const HomeScreen(),
         debugShowCheckedModeBanner: false,
       ),

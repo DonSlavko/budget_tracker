@@ -1,12 +1,24 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import '../models/transaction.dart';
 
 class TransactionsProvider with ChangeNotifier {
   List<Transaction> _transactions = [];
   final String _storageKey = 'transactions';
   late SharedPreferences _prefs;
+
+  TransactionsProvider() {
+    _initPrefs();
+  }
+
+  Future<void> _initPrefs() async {
+    _prefs = await SharedPreferences.getInstance();
+    await _prefs.remove(_storageKey); // Clear existing data
+    _transactions = [];
+    notifyListeners();
+  }
 
   List<Transaction> get transactions => [..._transactions];
 
@@ -30,17 +42,49 @@ class TransactionsProvider with ChangeNotifier {
         .fold(0, (sum, transaction) => sum + transaction.amount);
   }
 
-  Future<void> loadTransactions() async {
-    _prefs = await SharedPreferences.getInstance();
-    final String? transactionsJson = _prefs.getString(_storageKey);
-    if (transactionsJson != null) {
-      final List<dynamic> decodedList = json.decode(transactionsJson);
-      _transactions = decodedList
-          .map((item) => Transaction.fromJson(item))
-          .toList()
-        ..sort((a, b) => b.date.compareTo(a.date));
-      notifyListeners();
+  List<Transaction> getTransactionsByDateRange(DateTime start, DateTime end) {
+    return _transactions
+        .where((t) => t.date.isAfter(start.subtract(const Duration(days: 1))) && 
+                     t.date.isBefore(end.add(const Duration(days: 1))))
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+  }
+
+  List<String> get categories {
+    final categorySet = <String>{};
+    for (var transaction in _transactions) {
+      categorySet.add(transaction.category);
     }
+    return categorySet.toList()..sort();
+  }
+
+  Map<String, double> getCategoryTotals(TransactionType type) {
+    final totals = <String, double>{};
+    final typeTransactions = _transactions.where((t) => t.type == type);
+    
+    for (var transaction in typeTransactions) {
+      totals[transaction.category] = (totals[transaction.category] ?? 0) + transaction.amount;
+    }
+    
+    return totals;
+  }
+
+  Future<void> loadTransactions() async {
+    final String? transactionsJson = _prefs.getString(_storageKey);
+    if (transactionsJson != null && transactionsJson.isNotEmpty) {
+      try {
+        final List<dynamic> decodedList = json.decode(transactionsJson);
+        _transactions = decodedList
+            .map((item) => Transaction.fromJson(item))
+            .toList()
+          ..sort((a, b) => b.date.compareTo(a.date));
+      } catch (e) {
+        _transactions = [];
+      }
+    } else {
+      _transactions = [];
+    }
+    notifyListeners();
   }
 
   Future<void> addTransaction(Transaction transaction) async {
@@ -55,6 +99,15 @@ class TransactionsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateTransaction(Transaction updatedTransaction) async {
+    final index = _transactions.indexWhere((t) => t.id == updatedTransaction.id);
+    if (index != -1) {
+      _transactions[index] = updatedTransaction;
+      await _saveTransactions();
+      notifyListeners();
+    }
+  }
+
   Future<void> _saveTransactions() async {
     final String encodedData = json.encode(
       _transactions.map((transaction) => transaction.toJson()).toList(),
@@ -64,11 +117,5 @@ class TransactionsProvider with ChangeNotifier {
 
   List<Transaction> getTransactionsByCategory(String category) {
     return _transactions.where((t) => t.category == category).toList();
-  }
-
-  List<Transaction> getTransactionsByDateRange(DateTime start, DateTime end) {
-    return _transactions
-        .where((t) => t.date.isAfter(start) && t.date.isBefore(end))
-        .toList();
   }
 } 
