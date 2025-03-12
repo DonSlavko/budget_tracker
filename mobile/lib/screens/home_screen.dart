@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'dashboard_screen.dart';
 import 'add_transaction_screen.dart';
+import 'transactions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = const <Widget>[
     DashboardScreen(),
-    Center(child: Text('Transactions')), // TODO: Replace with TransactionsScreen
+    TransactionsScreen(),
     Center(child: Text('Statistics')), // TODO: Replace with StatisticsScreen
     Center(child: Text('Profile')), // TODO: Replace with ProfileScreen
   ];

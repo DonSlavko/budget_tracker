@@ -233,7 +233,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         title: Text(
-          transaction.title,
+          transaction.category,
           style: AppTheme.subheadingStyle,
         ),
         subtitle: Text(
