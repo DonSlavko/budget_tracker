@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/transactions_provider.dart';
 import '../models/transaction.dart';
+import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class TransactionsScreen extends StatefulWidget {
@@ -17,10 +18,24 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   late int selectedMonth;
   bool isYearlyView = false;
   
-  final List<String> months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  // We'll use the translated month names from AppLocalizations
+  List<String> getMonthNames(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    return [
+      appLocalizations.translate('january'),
+      appLocalizations.translate('february'),
+      appLocalizations.translate('march'),
+      appLocalizations.translate('april'),
+      appLocalizations.translate('may'),
+      appLocalizations.translate('june'),
+      appLocalizations.translate('july'),
+      appLocalizations.translate('august'),
+      appLocalizations.translate('september'),
+      appLocalizations.translate('october'),
+      appLocalizations.translate('november'),
+      appLocalizations.translate('december')
+    ];
+  }
 
   @override
   void initState() {
@@ -37,128 +52,153 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appLocalizations = AppLocalizations.of(context);
+    final months = getMonthNames(context);
+    
     return Scaffold(
       body: Consumer<TransactionsProvider>(
         builder: (context, transactionsProvider, child) {
           return Column(
             children: [
               // Month and Year selector
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 16),
+                child: Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: theme.dividerColor,
+                      width: 1,
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
                       children: [
-                        // Month Dropdown
-                        if (!isYearlyView) ...[
-                          Container(
-                            decoration: BoxDecoration(
-                              color: AppTheme.inputFillColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: DropdownButton<int>(
-                              value: selectedMonth,
-                              underline: const SizedBox(),
-                              items: List.generate(12, (index) {
-                                return DropdownMenuItem(
-                                  value: index + 1,
-                                  child: Text(
-                                    months[index],
-                                    style: AppTheme.bodyStyle,
-                                  ),
-                                );
-                              }),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() {
-                                    selectedMonth = value;
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                        ],
-                        // Year Dropdown
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.inputFillColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: DropdownButton<int>(
-                            value: selectedYear,
-                            underline: const SizedBox(),
-                            items: _getYearsList().map((year) {
-                              return DropdownMenuItem(
-                                value: year,
-                                child: Text(
-                                  year.toString(),
-                                  style: AppTheme.bodyStyle,
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                setState(() {
-                                  selectedYear = value;
-                                });
-                              }
-                            },
+                        Text(
+                          appLocalizations.translate('transactionFilters'),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Yearly View Toggle
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          isYearlyView = !isYearlyView;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isYearlyView ? AppTheme.primaryColor : AppTheme.inputFillColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isYearlyView ? AppTheme.primaryColor : AppTheme.borderColor,
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              isYearlyView ? Icons.check_circle : Icons.circle_outlined,
-                              size: 20,
-                              color: isYearlyView ? Colors.white : AppTheme.secondaryTextColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Yearly View',
-                              style: AppTheme.bodyStyle.copyWith(
-                                color: isYearlyView ? Colors.white : AppTheme.secondaryTextColor,
+                            // Month Dropdown
+                            if (!isYearlyView) ...[
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: theme.inputDecorationTheme.fillColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: theme.dividerColor,
+                                    width: 1,
+                                  ),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: DropdownButton<int>(
+                                  value: selectedMonth,
+                                  underline: const SizedBox(),
+                                  dropdownColor: theme.cardColor,
+                                  items: List.generate(12, (index) {
+                                    return DropdownMenuItem(
+                                      value: index + 1,
+                                      child: Text(
+                                        months[index],
+                                        style: theme.textTheme.bodyLarge,
+                                      ),
+                                    );
+                                  }),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setState(() {
+                                        selectedMonth = value;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                            ],
+                            // Year Dropdown
+                            Container(
+                              decoration: BoxDecoration(
+                                color: theme.inputDecorationTheme.fillColor,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: theme.dividerColor,
+                                  width: 1,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: DropdownButton<int>(
+                                value: selectedYear,
+                                underline: const SizedBox(),
+                                dropdownColor: theme.cardColor,
+                                items: _getYearsList().map((year) {
+                                  return DropdownMenuItem(
+                                    value: year,
+                                    child: Text(
+                                      year.toString(),
+                                      style: theme.textTheme.bodyLarge,
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      selectedYear = value;
+                                    });
+                                  }
+                                },
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        // Yearly View Toggle
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              isYearlyView = !isYearlyView;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isYearlyView ? theme.colorScheme.primary : Colors.transparent,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isYearlyView ? theme.colorScheme.primary : theme.dividerColor,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isYearlyView ? Icons.check_circle : Icons.circle_outlined,
+                                  size: 20,
+                                  color: isYearlyView ? theme.colorScheme.onPrimary : theme.textTheme.bodySmall?.color,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  appLocalizations.translate('yearlyView'),
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: isYearlyView ? theme.colorScheme.onPrimary : theme.textTheme.bodySmall?.color,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
               // Transactions list
@@ -172,53 +212,76 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
-  Widget _buildTransactionsList(
-    BuildContext context,
-    TransactionsProvider provider,
-  ) {
-    final transactions = provider.transactions
-        .where((t) =>
-            t.date.year == selectedYear &&
-            (isYearlyView || t.date.month == selectedMonth))
-        .toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-
+  Widget _buildTransactionsList(BuildContext context, TransactionsProvider provider) {
+    final theme = Theme.of(context);
+    final appLocalizations = AppLocalizations.of(context);
+    final transactions = provider.transactions;
+    final months = getMonthNames(context);
+    
     if (transactions.isEmpty) {
       return Center(
         child: Text(
-          isYearlyView 
-              ? 'No transactions for $selectedYear'
-              : 'No transactions for ${months[selectedMonth - 1]} $selectedYear',
-          style: AppTheme.bodyStyle.copyWith(color: AppTheme.secondaryTextColor),
+          appLocalizations.translate('noTransactionsFound'),
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.textTheme.bodySmall?.color,
+          ),
+        ),
+      );
+    }
+
+    final filteredTransactions = transactions.where((transaction) {
+      if (isYearlyView) {
+        return transaction.date.year == selectedYear;
+      } else {
+        return transaction.date.year == selectedYear && 
+               transaction.date.month == selectedMonth;
+      }
+    }).toList();
+
+    if (filteredTransactions.isEmpty) {
+      String message;
+      if (isYearlyView) {
+        // For yearly view, we need to replace {year} with the actual year
+        message = appLocalizations.translate('noTransactionsInYear').replaceAll('{year}', selectedYear.toString());
+      } else {
+        // For monthly view, we need to replace {month} and {year} with the actual values
+        message = appLocalizations.translate('noTransactionsInMonth')
+            .replaceAll('{month}', months[selectedMonth - 1])
+            .replaceAll('{year}', selectedYear.toString());
+      }
+      
+      return Center(
+        child: Text(
+          message,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.textTheme.bodySmall?.color,
+          ),
         ),
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: transactions.length,
+      itemCount: filteredTransactions.length,
       itemBuilder: (context, index) {
-        final transaction = transactions[index];
-        return _buildTransactionItem(context, transaction);
+        return _buildTransactionItem(context, filteredTransactions[index]);
       },
     );
   }
 
   Widget _buildTransactionItem(BuildContext context, Transaction transaction) {
-    return Container(
+    final theme = Theme.of(context);
+    final appLocalizations = AppLocalizations.of(context);
+    
+    return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderColor, width: 1),
-      ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppTheme.inputFillColor,
+            color: theme.inputDecorationTheme.fillColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -233,15 +296,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         ),
         title: Text(
           transaction.category,
-          style: AppTheme.subheadingStyle,
+          style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
           DateFormat('MMM d, yyyy').format(transaction.date),
-          style: AppTheme.captionStyle,
+          style: theme.textTheme.bodySmall,
         ),
         trailing: Text(
           '${transaction.type == TransactionType.expense ? '-' : '+'}\$${transaction.amount.toStringAsFixed(2)}',
-          style: AppTheme.bodyStyle.copyWith(
+          style: theme.textTheme.bodyLarge?.copyWith(
             color: transaction.type == TransactionType.income
                 ? AppTheme.successColor
                 : AppTheme.errorColor,

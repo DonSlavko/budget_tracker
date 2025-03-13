@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../providers/transactions_provider.dart';
 import '../models/transaction.dart';
+import '../l10n/app_localizations.dart';
 import 'add_transaction_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -26,7 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           return RefreshIndicator(
             onRefresh: _refreshData,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 16, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -35,7 +37,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildExpenseChart(context, transactionsProvider),
                   const SizedBox(height: 24),
                   Text(
-                    'Recent Transactions',
+                    AppLocalizations.of(context).translate('recentTransactions'),
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 16),
@@ -50,6 +52,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildBalanceCard(BuildContext context, TransactionsProvider provider) {
+    final appLocalizations = AppLocalizations.of(context);
     final transactions = provider.transactions;
     final totalBalance = transactions.fold(0.0, (sum, transaction) => 
       sum + (transaction.type == TransactionType.income ? transaction.amount : -transaction.amount));
@@ -67,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Total Balance',
+              appLocalizations.translate('totalBalance'),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
@@ -85,13 +88,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 _buildBalanceItem(
                   context,
-                  'Income',
+                  appLocalizations.translate('income'),
                   totalIncome,
                   AppTheme.successColor,
                 ),
                 _buildBalanceItem(
                   context,
-                  'Expenses',
+                  appLocalizations.translate('expenses'),
                   totalExpenses,
                   AppTheme.errorColor,
                 ),
@@ -104,6 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildExpenseChart(BuildContext context, TransactionsProvider provider) {
+    final appLocalizations = AppLocalizations.of(context);
     final expenses = provider.transactions
         .where((t) => t.type == TransactionType.expense)
         .toList();
@@ -134,7 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Expense Breakdown',
+          appLocalizations.translate('expenseBreakdown'),
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 16),
@@ -180,16 +184,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     BuildContext context,
     TransactionsProvider provider,
   ) {
+    final appLocalizations = AppLocalizations.of(context);
     final now = DateTime.now();
     final recentTransactions = provider.transactions
-        .where((t) => now.difference(t.date).inHours <= 48)
+        .where((t) => now.difference(t.date).inDays <= 14)
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date)); // Sort by date, newest first
 
     if (recentTransactions.isEmpty) {
       return Center(
         child: Text(
-          'No transactions in last 48 hours',
+          appLocalizations.translate('noRecentTransactions'),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       );
@@ -207,19 +212,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildTransactionItem(BuildContext context, Transaction transaction) {
-    return Container(
+    final theme = Theme.of(context);
+    
+    return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppTheme.inputFillColor,
+            color: theme.inputDecorationTheme.fillColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -234,15 +237,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         title: Text(
           transaction.category,
-          style: AppTheme.subheadingStyle,
+          style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
-          transaction.date.toString().split(' ')[0],
-          style: AppTheme.captionStyle,
+          DateFormat('MMM d, yyyy').format(transaction.date),
+          style: theme.textTheme.bodySmall,
         ),
         trailing: Text(
           '${transaction.type == TransactionType.expense ? '-' : '+'}\$${transaction.amount.toStringAsFixed(2)}',
-          style: AppTheme.bodyStyle.copyWith(
+          style: theme.textTheme.bodyLarge?.copyWith(
             color: transaction.type == TransactionType.income
                 ? AppTheme.successColor
                 : AppTheme.errorColor,

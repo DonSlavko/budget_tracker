@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
+import 'profile_screen.dart';
+import 'statistics_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,15 +16,40 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  late PageController _pageController;
 
   final List<Widget> _screens = const <Widget>[
     DashboardScreen(),
     TransactionsScreen(),
-    Center(child: Text('Statistics')), // TODO: Replace with StatisticsScreen
-    Center(child: Text('Profile')), // TODO: Replace with ProfileScreen
+    StatisticsScreen(),
+    ProfileScreen(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      // Animate to the selected page
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  void _onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -29,25 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Budget Tracker',
-          style: AppTheme.headingStyle.copyWith(
-            fontSize: 22,
-            color: AppTheme.primaryColor,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Implement notifications
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -59,7 +71,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        child: _screens[_selectedIndex],
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          physics: const PageScrollPhysics(),
+          children: _screens,
+        ),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -72,26 +89,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         child: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
+          items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard),
-              label: 'Dashboard',
+              icon: const Icon(Icons.dashboard_outlined),
+              activeIcon: const Icon(Icons.dashboard),
+              label: appLocalizations.translate('home'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt_outlined),
-              activeIcon: Icon(Icons.list_alt),
-              label: 'Transactions',
+              icon: const Icon(Icons.list_alt_outlined),
+              activeIcon: const Icon(Icons.list_alt),
+              label: appLocalizations.translate('transactions'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.pie_chart_outline),
-              activeIcon: Icon(Icons.pie_chart),
-              label: 'Statistics',
+              icon: const Icon(Icons.pie_chart_outline),
+              activeIcon: const Icon(Icons.pie_chart),
+              label: appLocalizations.translate('statistics'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
+              icon: const Icon(Icons.person_outline),
+              activeIcon: const Icon(Icons.person),
+              label: appLocalizations.translate('profile'),
             ),
           ],
           currentIndex: _selectedIndex,
@@ -100,24 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => AddTransactionSheet.show(context),
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppTheme.primaryColor,
-                AppTheme.primaryDarkColor,
-              ],
-            ),
-          ),
-          child: const Icon(
-            Icons.add,
-            size: 32,
-          ),
+        child: const Icon(
+          Icons.add,
+          size: 32,
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
