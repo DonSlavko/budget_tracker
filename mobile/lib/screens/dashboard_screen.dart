@@ -7,6 +7,7 @@ import '../providers/transactions_provider.dart';
 import '../models/transaction.dart';
 import '../l10n/app_localizations.dart';
 import 'add_transaction_screen.dart';
+import '../widgets/transaction_details_modal.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -213,6 +214,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildTransactionItem(BuildContext context, Transaction transaction) {
     final theme = Theme.of(context);
+    final appLocalizations = AppLocalizations.of(context);
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -240,7 +242,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
-          DateFormat('MMM d, yyyy').format(transaction.date),
+          DateFormat(appLocalizations.translate('dateFormat')).format(transaction.date),
           style: theme.textTheme.bodySmall,
         ),
         trailing: Text(
@@ -252,6 +254,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
+        onTap: () {
+          TransactionDetailsModal.show(context, transaction);
+        },
       ),
     );
   }

@@ -49,5 +49,44 @@
   "september": "September",
   "october": "October",
   "november": "November",
-  "december": "December"
+  "december": "December",
+  
+  "amount": "Amount",
+  "pleaseEnterAmount": "Please enter an amount",
+  "pleaseEnterValidNumber": "Please enter a valid amount (up to 2 decimal places)",
+  "category": "Category",
+  "date": "Date",
+  "descriptionOptional": "Description (Optional)",
+  "add": "Add",
+  "save": "Save",
+  
+  "foodAndDrinks": "Food & Drinks",
+  "transportation": "Transportation",
+  "housing": "Housing",
+  "utilities": "Utilities",
+  "shopping": "Shopping",
+  "entertainment": "Entertainment",
+  "healthcare": "Healthcare",
+  "education": "Education",
+  "other": "Other",
+  
+  "salary": "Salary",
+  "freelance": "Freelance",
+  "investment": "Investment",
+  "business": "Business",
+  "rental": "Rental",
+  "gift": "Gift",
+  
+  "dateFormat": "MMM d, yyyy",
+  "monthYearFormat": "MMMM yyyy",
+  
+  "cancel": "Cancel",
+  "ok": "OK",
+  "selectDate": "Select Date",
+  
+  "deleteTransaction": "Delete Transaction",
+  "deleteTransactionConfirmation": "Are you sure you want to delete this transaction?",
+  "transactionDeleted": "Transaction deleted successfully",
+  "close": "Close",
+  "editTransaction": "Edit Transaction"
 } 

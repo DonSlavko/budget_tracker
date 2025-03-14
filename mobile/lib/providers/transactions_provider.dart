@@ -15,9 +15,7 @@ class TransactionsProvider with ChangeNotifier {
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
-    await _prefs.remove(_storageKey); // Clear existing data
-    _transactions = [];
-    notifyListeners();
+    await loadTransactions();
   }
 
   List<Transaction> get transactions => [..._transactions];

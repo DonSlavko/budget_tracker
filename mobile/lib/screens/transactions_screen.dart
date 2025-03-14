@@ -5,6 +5,7 @@ import '../providers/transactions_provider.dart';
 import '../models/transaction.dart';
 import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import '../widgets/transaction_details_modal.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -77,13 +78,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        Text(
-                          appLocalizations.translate('transactionFilters'),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -299,7 +293,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
-          DateFormat('MMM d, yyyy').format(transaction.date),
+          DateFormat(appLocalizations.translate('dateFormat')).format(transaction.date),
           style: theme.textTheme.bodySmall,
         ),
         trailing: Text(
@@ -311,6 +305,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
+        onTap: () {
+          TransactionDetailsModal.show(context, transaction);
+        },
       ),
     );
   }

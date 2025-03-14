@@ -51,14 +51,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
-    const String appName = 'Lite Budget Tracker';
-    
+    String appName = 'Lite Budget Tracker';
     String tagline = 'Manage your finances with ease';
+    
     try {
       final appLocalizations = AppLocalizations.of(context);
+      appName = appLocalizations.translate('appTitle');
       tagline = appLocalizations.translate('tagline');
     } catch (e) {
-      // If AppLocalizations is not initialized yet, use the default English tagline
+      // If AppLocalizations is not initialized yet, use the default English values
     }
     
     return Scaffold(

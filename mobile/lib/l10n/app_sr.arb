@@ -49,5 +49,44 @@
   "september": "Septembar",
   "october": "Oktobar",
   "november": "Novembar",
-  "december": "Decembar"
+  "december": "Decembar",
+  
+  "amount": "Iznos",
+  "pleaseEnterAmount": "Molimo unesite iznos",
+  "pleaseEnterValidNumber": "Molimo unesite validan iznos (do 2 decimale)",
+  "category": "Kategorija",
+  "date": "Datum",
+  "descriptionOptional": "Opis (Opciono)",
+  "add": "Dodaj",
+  "save": "Sačuvaj",
+  
+  "foodAndDrinks": "Hrana i piće",
+  "transportation": "Prevoz",
+  "housing": "Stanovanje",
+  "utilities": "Komunalije",
+  "shopping": "Kupovina",
+  "entertainment": "Zabava",
+  "healthcare": "Zdravstvo",
+  "education": "Obrazovanje",
+  "other": "Ostalo",
+  
+  "salary": "Plata",
+  "freelance": "Honorarno",
+  "investment": "Investicija",
+  "business": "Biznis",
+  "rental": "Iznajmljivanje",
+  "gift": "Poklon",
+  
+  "dateFormat": "d. MMM yyyy.",
+  "monthYearFormat": "MMMM yyyy.",
+  
+  "cancel": "Otkaži",
+  "ok": "U redu",
+  "selectDate": "Izaberite datum",
+  
+  "deleteTransaction": "Obriši transakciju",
+  "deleteTransactionConfirmation": "Da li ste sigurni da želite da obrišete ovu transakciju?",
+  "transactionDeleted": "Transakcija uspešno obrisana",
+  "close": "Zatvori",
+  "editTransaction": "Izmeni transakciju"
 } 

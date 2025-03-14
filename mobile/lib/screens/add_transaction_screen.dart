@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../models/transaction.dart';
 import '../providers/transactions_provider.dart';
 import '../theme/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 class AddTransactionSheet extends StatefulWidget {
-  const AddTransactionSheet({super.key});
+  final Transaction? transaction;
 
-  static Future<void> show(BuildContext context) {
+  const AddTransactionSheet({
+    super.key,
+    this.transaction,
+  });
+
+  static Future<void> show(BuildContext context, {Transaction? transaction}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -24,7 +31,7 @@ class AddTransactionSheet extends StatefulWidget {
               color: theme.cardColor,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: const AddTransactionSheet(),
+            child: AddTransactionSheet(transaction: transaction),
           ),
         );
       },
@@ -37,63 +44,112 @@ class AddTransactionSheet extends StatefulWidget {
 
 class _AddTransactionSheetState extends State<AddTransactionSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
   final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
   String _selectedCategory = '';
   TransactionType _selectedType = TransactionType.expense;
   DateTime _selectedDate = DateTime.now();
+  bool _isEditing = false;
+  late String _transactionId;
 
-  final List<String> _expenseCategories = [
-    'Food & Drinks',
-    'Transportation',
-    'Housing',
-    'Utilities',
-    'Shopping',
-    'Entertainment',
-    'Healthcare',
-    'Education',
-    'Other',
-  ];
+  List<String> _getExpenseCategories(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    return [
+      appLocalizations.translate('foodAndDrinks'),
+      appLocalizations.translate('transportation'),
+      appLocalizations.translate('housing'),
+      appLocalizations.translate('utilities'),
+      appLocalizations.translate('shopping'),
+      appLocalizations.translate('entertainment'),
+      appLocalizations.translate('healthcare'),
+      appLocalizations.translate('education'),
+      appLocalizations.translate('other'),
+    ];
+  }
 
-  final List<String> _incomeCategories = [
-    'Salary',
-    'Freelance',
-    'Investment',
-    'Business',
-    'Rental',
-    'Gift',
-    'Other',
-  ];
+  List<String> _getIncomeCategories(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    return [
+      appLocalizations.translate('salary'),
+      appLocalizations.translate('freelance'),
+      appLocalizations.translate('investment'),
+      appLocalizations.translate('business'),
+      appLocalizations.translate('rental'),
+      appLocalizations.translate('gift'),
+      appLocalizations.translate('other'),
+    ];
+  }
 
-  List<String> get _currentCategories =>
-      _selectedType == TransactionType.expense ? _expenseCategories : _incomeCategories;
+  List<String> _getCurrentCategories(BuildContext context) {
+    return _selectedType == TransactionType.expense 
+        ? _getExpenseCategories(context) 
+        : _getIncomeCategories(context);
+  }
 
   @override
   void initState() {
     super.initState();
-    _selectedCategory = _expenseCategories.first;
+    // Initialize with existing transaction data if editing
+    if (widget.transaction != null) {
+      _isEditing = true;
+      _transactionId = widget.transaction!.id;
+      _amountController.text = widget.transaction!.amount.toString();
+      _selectedType = widget.transaction!.type;
+      _selectedCategory = widget.transaction!.category;
+      _selectedDate = widget.transaction!.date;
+      if (widget.transaction!.note != null) {
+        _noteController.text = widget.transaction!.note!;
+      }
+    }
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
     _amountController.dispose();
+    _noteController.dispose();
     super.dispose();
   }
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
+      // Parse the amount and ensure it has exactly 2 decimal places
+      final amountText = _amountController.text;
+      double amount;
+      
+      if (amountText.contains('.')) {
+        // If there's a decimal point, ensure exactly 2 decimal places
+        final parts = amountText.split('.');
+        final integerPart = parts[0];
+        var decimalPart = parts[1];
+        
+        // Pad with zeros if needed
+        if (decimalPart.length == 1) {
+          decimalPart += '0';
+        }
+        
+        amount = double.parse('$integerPart.$decimalPart');
+      } else {
+        // If there's no decimal point, add .00
+        amount = double.parse('$amountText.00');
+      }
+      
       final transaction = Transaction(
-        id: const Uuid().v4(),
-        title: _titleController.text.isEmpty ? _selectedCategory : _titleController.text,
-        amount: double.parse(_amountController.text),
+        id: _isEditing ? _transactionId : const Uuid().v4(),
+        title: _selectedCategory,
+        amount: amount,
         type: _selectedType,
         category: _selectedCategory,
         date: _selectedDate,
+        note: _noteController.text.isEmpty ? null : _noteController.text,
       );
 
-      Provider.of<TransactionsProvider>(context, listen: false)
-          .addTransaction(transaction);
+      final provider = Provider.of<TransactionsProvider>(context, listen: false);
+      
+      if (_isEditing) {
+        provider.updateTransaction(transaction);
+      } else {
+        provider.addTransaction(transaction);
+      }
 
       Navigator.pop(context);
     }
@@ -102,6 +158,12 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final appLocalizations = AppLocalizations.of(context);
+    
+    // Initialize the selected category if it's empty
+    if (_selectedCategory.isEmpty) {
+      _selectedCategory = _getCurrentCategories(context).first;
+    }
     
     return SingleChildScrollView(
       child: Padding(
@@ -118,7 +180,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 Text(
-                  'Add Transaction',
+                  _isEditing 
+                      ? appLocalizations.translate('editTransaction')
+                      : appLocalizations.translate('addTransaction'),
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(width: 48), // Balance the title
@@ -139,19 +203,19 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: SegmentedButton<TransactionType>(
-                      segments: const [
+                      segments: [
                         ButtonSegment<TransactionType>(
                           value: TransactionType.expense,
-                          label: Text('Expense'),
-                          icon: Icon(
+                          label: Text(appLocalizations.translate('expense')),
+                          icon: const Icon(
                             Icons.arrow_downward,
                             color: AppTheme.errorColor,
                           ),
                         ),
                         ButtonSegment<TransactionType>(
                           value: TransactionType.income,
-                          label: Text('Income'),
-                          icon: Icon(
+                          label: Text(appLocalizations.translate('income')),
+                          icon: const Icon(
                             Icons.arrow_upward,
                             color: AppTheme.successColor,
                           ),
@@ -161,7 +225,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                       onSelectionChanged: (Set<TransactionType> newSelection) {
                         setState(() {
                           _selectedType = newSelection.first;
-                          _selectedCategory = _currentCategories.first;
+                          _selectedCategory = _getCurrentCategories(context).first;
                         });
                       },
                     ),
@@ -169,10 +233,13 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _amountController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    ],
                     decoration: InputDecoration(
                       prefixText: '\$  ',
-                      hintText: 'Amount',
+                      hintText: appLocalizations.translate('amount'),
                       errorStyle: TextStyle(color: theme.colorScheme.error),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -184,11 +251,19 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter an amount';
+                        return appLocalizations.translate('pleaseEnterAmount');
                       }
-                      if (double.tryParse(value) == null) {
-                        return 'Please enter a valid number';
+                      
+                      final amountRegex = RegExp(r'^\d+(\.\d{1,2})?$');
+                      if (!amountRegex.hasMatch(value)) {
+                        return appLocalizations.translate('pleaseEnterValidNumber');
                       }
+                      
+                      final amount = double.tryParse(value);
+                      if (amount == null || amount <= 0) {
+                        return appLocalizations.translate('pleaseEnterValidNumber');
+                      }
+                      
                       return null;
                     },
                   ),
@@ -204,12 +279,12 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                       isExpanded: true,
                       dropdownColor: theme.cardColor,
                       decoration: InputDecoration(
-                        hintText: 'Category',
+                        hintText: appLocalizations.translate('category'),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         border: InputBorder.none,
                         hintStyle: TextStyle(color: theme.hintColor),
                       ),
-                      items: _currentCategories.map((category) {
+                      items: _getCurrentCategories(context).map((category) {
                         return DropdownMenuItem(
                           value: category,
                           child: Text(category, style: theme.textTheme.bodyLarge),
@@ -228,6 +303,31 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                         initialDate: _selectedDate,
                         firstDate: DateTime(2020),
                         lastDate: DateTime.now(),
+                        helpText: appLocalizations.translate('selectDate'),
+                        cancelText: appLocalizations.translate('cancel'),
+                        confirmText: appLocalizations.translate('ok'),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: Theme.of(context).colorScheme.copyWith(
+                                primary: theme.colorScheme.primary,
+                                onPrimary: theme.colorScheme.onPrimary,
+                                surface: theme.cardColor,
+                                onSurface: theme.colorScheme.onSurface,
+                              ),
+                              textButtonTheme: TextButtonThemeData(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: theme.colorScheme.primary,
+                                  textStyle: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
                       if (picked != null) {
                         setState(() => _selectedDate = picked);
@@ -242,7 +342,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                       child: Row(
                         children: [
                           Text(
-                            'Date',
+                            appLocalizations.translate('date'),
                             style: theme.textTheme.bodyLarge?.copyWith(
                               color: theme.hintColor,
                             ),
@@ -260,14 +360,14 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    controller: _titleController,
+                    controller: _noteController,
                     maxLines: 3,
                     decoration: InputDecoration(
                       prefixIcon: Padding(
                         padding: const EdgeInsets.only(bottom: 48),
                         child: Icon(Icons.description_outlined, color: theme.iconTheme.color),
                       ),
-                      hintText: 'Description (Optional)',
+                      hintText: appLocalizations.translate('descriptionOptional'),
                       hintStyle: TextStyle(color: theme.hintColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -290,7 +390,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                         ),
                       ),
                       child: Text(
-                        'Add',
+                        _isEditing 
+                            ? appLocalizations.translate('save')
+                            : appLocalizations.translate('add'),
                         style: TextStyle(
                           color: theme.colorScheme.primary,
                           fontSize: 16,

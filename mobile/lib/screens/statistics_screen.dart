@@ -150,7 +150,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               return Padding(
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
-                                  '${DateFormat('d').format(month)}. ${DateFormat('MMM').format(month)}',
+                                  DateFormat('MMM').format(month),
                                   style: theme.textTheme.bodySmall,
                                 ),
                               );
@@ -163,12 +163,17 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         sideTitles: SideTitles(
                           showTitles: true,
                           interval: horizontalInterval,
-                          reservedSize: 40,
+                          reservedSize: 60,
                           getTitlesWidget: (value, meta) {
                             if (value == 0) return const SizedBox.shrink();
-                            return Text(
-                              '${(value / 1000).toStringAsFixed(2)}k',
-                              style: theme.textTheme.bodySmall,
+                            return SizedBox(
+                              width: 60,
+                              child: Text(
+                                '${(value / 1000).toStringAsFixed(2)}k',
+                                style: theme.textTheme.bodySmall,
+                                overflow: TextOverflow.visible,
+                                softWrap: false,
+                              ),
                             );
                           },
                         ),
@@ -205,7 +210,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               final expense = monthlyExpenses[month] ?? 0;
                               
                               return LineTooltipItem(
-                                '${DateFormat('MMM yyyy').format(month)}\n',
+                                '${DateFormat(appLocalizations.translate('monthYearFormat')).format(month)}\n',
                                 theme.textTheme.bodySmall!,
                                 children: [
                                   TextSpan(
@@ -278,7 +283,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          DateFormat('MMMM yyyy').format(_selectedMonth),
+          _getFormattedMonthYear(context, _selectedMonth),
           style: theme.textTheme.titleMedium?.copyWith(
             color: theme.colorScheme.primary,
             fontWeight: FontWeight.bold,
@@ -368,5 +373,26 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
       ],
     );
+  }
+
+  String _getFormattedMonthYear(BuildContext context, DateTime month) {
+    final appLocalizations = AppLocalizations.of(context);
+    final monthIndex = month.month - 1; // 0-based index for months
+    final monthNames = [
+      appLocalizations.translate('january'),
+      appLocalizations.translate('february'),
+      appLocalizations.translate('march'),
+      appLocalizations.translate('april'),
+      appLocalizations.translate('may'),
+      appLocalizations.translate('june'),
+      appLocalizations.translate('july'),
+      appLocalizations.translate('august'),
+      appLocalizations.translate('september'),
+      appLocalizations.translate('october'),
+      appLocalizations.translate('november'),
+      appLocalizations.translate('december')
+    ];
+    
+    return '${monthNames[monthIndex]} ${month.year}';
   }
 } 
